@@ -25,6 +25,9 @@ bankProcess(BankObj, ParentID) ->
                     Sender ! {Name,0,Amount},
                     ParentID ! {loanrejected,Name, Sender,LoanAmt},
                     bankProcess({Name,Amount},ParentID)
-        end,
-            io:fwrite("At the end of bank ~w~n", [Amount])
+        end
+          % io:fwrite("At the end of bank ~w~n", [Amount])
+    after 2000 ->
+      ParentID ! {finalstatebank,Name,Amount}
+  
     end.

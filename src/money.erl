@@ -1,13 +1,14 @@
 -module(money).
 
--export([main/0,masterprocess/0]).
+-export([main/0,masterprocess/1,printResult/1]).
 
 main() -> 
-		register(masterprocessthread,spawn(money,masterprocess,[])),
+		CustomerFinaMessages=[],
+		register(masterprocessthread,spawn(money,masterprocess,[CustomerFinaMessages])),
 		masterprocessthread ! start,
-	    masterprocess().
+	    masterprocess(CustomerFinaMessages).
 
-masterprocess() ->
+masterprocess(CustomerFinaMessages) ->
 	% counter=0,
 receive
 	
@@ -17,7 +18,7 @@ receive
 		% This has all the customer threads
 			CThreadList =[Name || {Name,_} <- CustomerData],
 			BThreadList =[Name || {Name,_} <- BankData],
-			% numberOfCustomers=length(CThreadList),
+			% numberOfCustomers=CThreadList,
 		% Display customer and bank data
 			io:format("*****The customers and their objectives*****~n"),
 			lists:map(fun({Name,Amount}) -> io:format("~w : ~w~n",[Name,Amount]) end,CustomerData),
@@ -28,73 +29,40 @@ receive
 			CacheListCustomers = [register (Name, spawn(customer, customerProcess, [{Name,Amount}, BThreadList,self(),Amount])) || {Name,Amount} <- CustomerData],
 		% timer:sleep(1000),
 			CacheListBank = [register (BName,spawn(bank, bankProcess, [{BName,Amount}, self()])) || {BName,Amount} <- BankData],
-			masterprocess();
+			masterprocess(CustomerFinaMessages);
 	{loanrequest, Sender, RequestAmount, TargetBank}->
 			io:format("~w is requesting loan to ~w for ~w~n",[Sender,TargetBank,RequestAmount]),
-			masterprocess();
+			masterprocess(CustomerFinaMessages);
 	{loanreceived,Sender, RequestAmount, TargetBank}->
 			io:format("Loan recived by ~w from ~w of amount ~w~n",[Sender,TargetBank, RequestAmount]),
-			masterprocess();
+			masterprocess(CustomerFinaMessages);
 	{loanrejected,Sender, Customer, LoanAmount}->
 			io:format("~w denies loan of amount ~w for ~w~n",[Sender, LoanAmount, Customer]),
-			masterprocess();
+			masterprocess(CustomerFinaMessages);
 	{loanapproved,Sender, Customer,LoanAmount}->
 			io:format("~w approves loan of amount ~w for ~w~n",[Sender, LoanAmount, Customer]),
-			masterprocess();
+			masterprocess(CustomerFinaMessages);
 	{finalstatecustomer,Name,Amount,TA}->
 			
 			if(Amount==0)->
 					
-					io:format("~w was able to get all the money!!! Yay! ~w~n~n",[Name,TA]);
-			true-> 	io:format("~w was not able to get all the money...He was able to get only ~w :( :(~n~n", [Name, TA-Amount])
+					% io:format("~w was able to get all the money!!!!!!! Yay! ~w~n~n",[Name,TA]);\
+					String= lists:concat([Name," was able to get all the money!!!!!!! Yay! ",TA,"~n"]),
+					UCustomerFinalMessages = [ String  | CustomerFinaMessages ];
+			true-> 	String2=lists:concat([Name," was not able to get all the money...He was able to get only ",  TA-Amount," :( ~n"]),
+					UCustomerFinalMessages = [ String2  | CustomerFinaMessages ]
 			end,
-			masterprocess();
+			masterprocess(UCustomerFinalMessages);
 	{finalstatebank,Name,Amount}->
 			io:format("~w bank is left with ~w~n",[Name,Amount]),
-			masterprocess()
-
+			masterprocess(CustomerFinaMessages)
+	after 8000->
+		% lists:map(fun(Message) -> io:format(Message) end, CustomerFinaMessages),
+	% [io:format(||]
+		io:format("The simulation is ending and printing final customer results PLEASE WAIT!~n"),
+		printResult(CustomerFinaMessages)
+		
 end.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
- 	% Send = fun(X) -> X ! {self(), 40} end,
- 	% Z=[Send(BankX) || BankX <- BThreadList].
-
-% % Unregitering the names so that you can run multiple times
-% timer:sleep(5000),
- 	% CacheListCustomers2 = [unregister (element(1,{Name,Amount})) || {Name,Amount} <- CustomerData],
- 	% CacheListBank2 = [unregister (element(1,{Name,Amount})) || {Name,Amount} <- BankData].
-
+printResult(CustomerFinaMessages) ->
 	
-
-
+	lists:map(fun(Message) -> io:format(Message) end, CustomerFinaMessages).

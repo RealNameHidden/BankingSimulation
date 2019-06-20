@@ -4,9 +4,7 @@
 
 customerProcess(Cus,BankList,ParentID,TA) ->
     {Name, Amount} = Cus,
-    % io:format("Customer thread for ~w~n", [Name]),
-    % io:format("The RB is: ~w~n",[RandomBankNumber]),
-    % timer:sleep(rand:uniform(100)),
+    
     Request = rand:uniform(50),
     if (length(BankList) /= 0)->
         if (Amount-Request >= 0)->
@@ -35,7 +33,7 @@ customerProcess(Cus,BankList,ParentID,TA) ->
                         ParentID ! {finalstatebank,Sender,Remaining},
                         UpdateBankList= lists:delete(Sender,BankList),
                         customerProcess({Name,UpdatedAmount},UpdateBankList, ParentID,TA)
-                    end
+                    end 
                     
             end;
             true-> customerProcess({Name,Amount},BankList, ParentID,TA)
