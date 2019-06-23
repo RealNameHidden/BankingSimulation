@@ -1,12 +1,13 @@
 -module(money).
 
--export([main/0,masterprocess/1,printResult/1]).
+-export([start/0,masterprocess/1,printResult/1]).
 
-main() -> 
+start() -> 
 		CustomerFinaMessages=[],
+		BankFinalMessages=[],
 		register(masterprocessthread,spawn(money,masterprocess,[CustomerFinaMessages])),
-		masterprocessthread ! start,
-	    masterprocess(CustomerFinaMessages).
+		masterprocessthread ! start.
+	    % masterprocess(CustomerFinaMessages).
 
 masterprocess(CustomerFinaMessages) ->
 	% counter=0,
@@ -59,7 +60,7 @@ receive
 	after 8000->
 		% lists:map(fun(Message) -> io:format(Message) end, CustomerFinaMessages),
 	% [io:format(||]
-		io:format("The simulation is ending and printing final customer results PLEASE WAIT!~n"),
+		io:format("~n~nThe simulation is ending and printing final customer results below, above are the final bank messages PLEASE WAIT!~n"),
 		printResult(CustomerFinaMessages)
 		
 end.
