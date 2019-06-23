@@ -15,8 +15,7 @@ customerProcess(Cus,BankList,ParentID,TA) ->
                 RandomBankNumber = rand:uniform(length(BankList))
             end,    
         SelectRBank = lists:nth(RandomBankNumber, BankList),
-        % io:format("~w is requesting loan to ~w for ~w ~n",[Name,SelectRBank,Request]),
-        ParentID ! {loanrequest,Name,Request,SelectRBank},
+         ParentID ! {loanrequest,Name,Request,SelectRBank},
         timer:sleep(rand:uniform(100)),
         SelectRBank ! {Name,Request},
             receive

@@ -7,7 +7,7 @@ start() ->
 		BankFinalMessages=[],
 		register(masterprocessthread,spawn(money,masterprocess,[CustomerFinaMessages])),
 		masterprocessthread ! start.
-	    % masterprocess(CustomerFinaMessages).
+	    
 
 masterprocess(CustomerFinaMessages) ->
 	% counter=0,
@@ -28,7 +28,7 @@ receive
 			io:format("~n Creating processes.....~n"),	
 		% Make processes
 			CacheListCustomers = [register (Name, spawn(customer, customerProcess, [{Name,Amount}, BThreadList,self(),Amount])) || {Name,Amount} <- CustomerData],
-		% timer:sleep(1000),
+		
 			CacheListBank = [register (BName,spawn(bank, bankProcess, [{BName,Amount}, self()])) || {BName,Amount} <- BankData],
 			masterprocess(CustomerFinaMessages);
 	{loanrequest, Sender, RequestAmount, TargetBank}->
@@ -57,13 +57,9 @@ receive
 	{finalstatebank,Name,Amount}->
 			io:format("~w bank is left with ~w~n",[Name,Amount]),
 			masterprocess(CustomerFinaMessages)
-	after 8000->
-		% lists:map(fun(Message) -> io:format(Message) end, CustomerFinaMessages),
-	% [io:format(||]
+	after 5000->
 		io:format("~n~nThe simulation is ending and printing final customer results below, above are the final bank messages PLEASE WAIT!~n"),
 		printResult(CustomerFinaMessages)
-		
 end.
-printResult(CustomerFinaMessages) ->
-	
+printResult(CustomerFinaMessages) ->	
 	lists:map(fun(Message) -> io:format(Message) end, CustomerFinaMessages).
